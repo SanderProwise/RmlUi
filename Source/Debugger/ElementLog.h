@@ -32,6 +32,7 @@
 #include "../../Include/RmlUi/Core/ElementDocument.h"
 #include "../../Include/RmlUi/Core/EventListener.h"
 #include "../../Include/RmlUi/Core/Types.h"
+#include "ElementDebugDocument.h"
 
 namespace Rml {
 namespace Debugger {
@@ -42,7 +43,7 @@ class DebuggerSystemInterface;
     @author Robert Curry
  */
 
-class ElementLog : public Rml::ElementDocument, public Rml::EventListener {
+class ElementLog : public ElementDebugDocument, public Rml::EventListener {
 public:
 	RMLUI_RTTI_DefineWithParent(ElementLog, Rml::ElementDocument)
 

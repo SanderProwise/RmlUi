@@ -31,6 +31,7 @@
 
 #include "../../Include/RmlUi/Core/ElementDocument.h"
 #include "../../Include/RmlUi/Core/EventListener.h"
+#include "ElementDebugDocument.h"
 
 namespace Rml {
 namespace Debugger {
@@ -42,7 +43,7 @@ typedef Vector<NamedProperty> NamedPropertyList;
     @author Robert Curry
  */
 
-class ElementInfo : public ElementDocument, public EventListener {
+class ElementInfo : public ElementDebugDocument, public EventListener {
 public:
 	RMLUI_RTTI_DefineWithParent(ElementInfo, ElementDocument)
 
@@ -60,6 +61,8 @@ public:
 
 	void RenderHoverElement();
 	void RenderSourceElement();
+
+	Element* GetSourceElement() const { return source_element; }
 
 protected:
 	void ProcessEvent(Event& event) override;

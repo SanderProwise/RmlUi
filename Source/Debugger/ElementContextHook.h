@@ -30,6 +30,7 @@
 #define RMLUI_DEBUGGER_ELEMENTCONTEXTHOOK_H
 
 #include "../../Include/RmlUi/Core/ElementDocument.h"
+#include "ElementDebugDocument.h"
 
 namespace Rml {
 namespace Debugger {
@@ -42,7 +43,7 @@ class DebuggerPlugin;
     @author Peter Curry
  */
 
-class ElementContextHook : public ElementDocument {
+class ElementContextHook : public ElementDebugDocument {
 public:
 	RMLUI_RTTI_DefineWithParent(ElementContextHook, ElementDocument)
 
