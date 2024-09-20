@@ -203,6 +203,7 @@ void ElementSVG::UpdateTexture()
 		const size_t total_bytes = 4 * render_dimensions.x * render_dimensions.y;
 
 		lunasvg::Bitmap bitmap = svg_document->renderToBitmap(render_dimensions.x, render_dimensions.y);
+		bitmap.convertToRGBA();
 
 		data.reset(new byte[total_bytes]);
 		memcpy((void*)data.get(), bitmap.data(), total_bytes);
