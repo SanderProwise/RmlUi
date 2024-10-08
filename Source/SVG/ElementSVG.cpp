@@ -193,7 +193,7 @@ void ElementSVG::UpdateTexture()
 		for (size_t i = 0; i < bitmap_byte_size; i += 4)
 			std::swap(bitmap_data[i], bitmap_data[i + 2]);
 
-		if (!bitmap.valid() || !bitmap.data())
+		if (!bitmap.data())
 			return false;
 		if (!texture_interface.GenerateTexture({reinterpret_cast<const Rml::byte*>(bitmap.data()), bitmap_byte_size}, render_dimensions))
 			return false;
