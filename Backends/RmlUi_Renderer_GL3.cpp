@@ -48,7 +48,7 @@
 	#define RMLUI_SHADER_HEADER_VERSION "#version 300 es\nprecision highp float;\n"
 	#include <GLES3/gl3.h>
 #elif defined RMLUI_GL3_CUSTOM_LOADER
-	#define RMLUI_SHADER_HEADER_VERSION "#version 330\n"
+	#define RMLUI_SHADER_HEADER_VERSION "#version " RMLUI_STRINGIFY(RMLUI_SHADER_HEADER_VERSION_NUMBER) "\n#define PRECISION_TYPE " RMLUI_STRINGIFY(RMLUI_SHADER_HEADER_VERSION_PRECISION) "\n"
 	#include RMLUI_GL3_CUSTOM_LOADER
 #else
 	#define RMLUI_SHADER_HEADER_VERSION "#version 330\n"
@@ -70,43 +70,43 @@ static constexpr int NUM_MSAA_SAMPLES = 2;
 	RMLUI_SHADER_HEADER_VERSION "#define MAX_NUM_STOPS " RMLUI_STRINGIFY(MAX_NUM_STOPS) "\n#line " RMLUI_STRINGIFY(__LINE__) "\n"
 
 static const char* shader_vert_main = RMLUI_SHADER_HEADER R"(
-uniform vec2 _translate;
-uniform mat4 _transform;
+uniform PRECISION_TYPE vec2 _translate;
+uniform PRECISION_TYPE mat4 _transform;
 
-in vec2 inPosition;
-in vec4 inColor0;
-in vec2 inTexCoord0;
+in PRECISION_TYPE vec2 inPosition;
+in PRECISION_TYPE vec4 inColor0;
+in PRECISION_TYPE vec2 inTexCoord0;
 
-out vec2 fragTexCoord;
-out vec4 fragColor;
+out PRECISION_TYPE vec2 fragTexCoord;
+out PRECISION_TYPE vec4 fragColor;
 
 void main() {
 	fragTexCoord = inTexCoord0;
 	fragColor = inColor0;
 
 	vec2 translatedPos = inPosition + _translate;
-	vec4 outPos = _transform * vec4(translatedPos, 0.0, 1.0);
+	PRECISION_TYPE vec4 outPos = _transform * PRECISION_TYPE vec4(translatedPos, 0.0, 1.0);
 
     gl_Position = outPos;
 }
 )";
 static const char* shader_frag_texture = RMLUI_SHADER_HEADER R"(
-uniform sampler2D _tex;
-in vec2 fragTexCoord;
-in vec4 fragColor;
+uniform PRECISION_TYPE sampler2D _tex;
+in PRECISION_TYPE vec2 fragTexCoord;
+in PRECISION_TYPE vec4 fragColor;
 
-out vec4 finalColor;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	vec4 texColor = texture(_tex, fragTexCoord);
+	PRECISION_TYPE vec4 texColor = texture(_tex, fragTexCoord);
 	finalColor = fragColor * texColor;
 }
 )";
 static const char* shader_frag_color = RMLUI_SHADER_HEADER R"(
-in vec2 fragTexCoord;
-in vec4 fragColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+in PRECISION_TYPE vec4 fragColor;
 
-out vec4 finalColor;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
 	finalColor = fragColor;
@@ -125,18 +125,18 @@ static const char* shader_frag_gradient = RMLUI_SHADER_HEADER R"(
 #define PI 3.14159265
 
 uniform int _func; // one of the above definitions
-uniform vec2 _p;   // linear: starting point,         radial: center,                        conic: center
-uniform vec2 _v;   // linear: vector to ending point, radial: 2d curvature (inverse radius), conic: angled unit vector
-uniform vec4 _stop_colors[MAX_NUM_STOPS];
-uniform float _stop_positions[MAX_NUM_STOPS]; // normalized, 0 -> starting point, 1 -> ending point
-uniform int _num_stops;
+uniform PRECISION_TYPE vec2 _p;   // linear: starting point,         radial: center,                        conic: center
+uniform PRECISION_TYPE vec2 _v;   // linear: vector to ending point, radial: 2d curvature (inverse radius), conic: angled unit vector
+uniform PRECISION_TYPE vec4 _stop_colors[MAX_NUM_STOPS];
+uniform PRECISION_TYPE float _stop_positions[MAX_NUM_STOPS]; // normalized, 0 -> starting point, 1 -> ending point
+uniform PRECISION_TYPE int _num_stops;
 
-in vec2 fragTexCoord;
-in vec4 fragColor;
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+in PRECISION_TYPE vec4 fragColor;
+out PRECISION_TYPE vec4 finalColor;
 
-vec4 mix_stop_colors(float t) {
-	vec4 color = _stop_colors[0];
+PRECISION_TYPE vec4 mix_stop_colors(float t) {
+	PRECISION_TYPE vec4 color = _stop_colors[0];
 
 	for (int i = 1; i < _num_stops; i++)
 		color = mix(color, _stop_colors[i], smoothstep(_stop_positions[i-1], _stop_positions[i], t));
@@ -145,30 +145,30 @@ vec4 mix_stop_colors(float t) {
 }
 
 void main() {
-	float t = 0.0;
+	PRECISION_TYPE float t = 0.0;
 
 	if (_func == LINEAR || _func == REPEATING_LINEAR)
 	{
-		float dist_square = dot(_v, _v);
-		vec2 V = fragTexCoord - _p;
+		PRECISION_TYPE float dist_square = dot(_v, _v);
+		PRECISION_TYPE vec2 V = fragTexCoord - _p;
 		t = dot(_v, V) / dist_square;
 	}
 	else if (_func == RADIAL || _func == REPEATING_RADIAL)
 	{
-		vec2 V = fragTexCoord - _p;
+		PRECISION_TYPE vec2 V = fragTexCoord - _p;
 		t = length(_v * V);
 	}
 	else if (_func == CONIC || _func == REPEATING_CONIC)
 	{
-		mat2 R = mat2(_v.x, -_v.y, _v.y, _v.x);
-		vec2 V = R * (fragTexCoord - _p);
+		PRECISION_TYPE mat2 R = mat2(_v.x, -_v.y, _v.y, _v.x);
+		PRECISION_TYPE vec2 V = R * (fragTexCoord - _p);
 		t = 0.5 + atan(-V.x, V.y) / (2.0 * PI);
 	}
 
 	if (_func == REPEATING_LINEAR || _func == REPEATING_RADIAL || _func == REPEATING_CONIC)
 	{
-		float t0 = _stop_positions[0];
-		float t1 = _stop_positions[_num_stops - 1];
+		PRECISION_TYPE float t0 = _stop_positions[0];
+		PRECISION_TYPE float t1 = _stop_positions[_num_stops - 1];
 		t = t0 + mod(t - t0, t1 - t0);
 	}
 
@@ -178,57 +178,57 @@ void main() {
 
 // "Creation" by Danilo Guanabara, based on: https://www.shadertoy.com/view/XsXXDn
 static const char* shader_frag_creation = RMLUI_SHADER_HEADER R"(
-uniform float _value;
-uniform vec2 _dimensions;
+uniform PRECISION_TYPE float _value;
+uniform PRECISION_TYPE vec2 _dimensions;
 
-in vec2 fragTexCoord;
-in vec4 fragColor;
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+in PRECISION_TYPE vec4 fragColor;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	float t = _value;
-	vec3 c;
-	float l;
+	PRECISION_TYPE float t = _value;
+	PRECISION_TYPE vec3 c;
+	PRECISION_TYPE float l;
 	for (int i = 0; i < 3; i++) {
-		vec2 p = fragTexCoord;
-		vec2 uv = p;
+		PRECISION_TYPE vec2 p = fragTexCoord;
+		PRECISION_TYPE vec2 uv = p;
 		p -= .5;
 		p.x *= _dimensions.x / _dimensions.y;
-		float z = t + float(i) * .07;
+		PRECISION_TYPE float z = t + float(i) * .07;
 		l = length(p);
 		uv += p / l * (sin(z) + 1.) * abs(sin(l * 9. - z - z));
 		c[i] = .01 / length(mod(uv, 1.) - .5);
 	}
-	finalColor = vec4(c / l, fragColor.a);
+	finalColor = PRECISION_TYPE vec4(c / l, fragColor.a);
 }
 )";
 
 static const char* shader_vert_passthrough = RMLUI_SHADER_HEADER R"(
-in vec2 inPosition;
-in vec2 inTexCoord0;
+in PRECISION_TYPE vec2 inPosition;
+in PRECISION_TYPE vec2 inTexCoord0;
 
-out vec2 fragTexCoord;
+out PRECISION_TYPE vec2 fragTexCoord;
 
 void main() {
 	fragTexCoord = inTexCoord0;
-    gl_Position = vec4(inPosition, 0.0, 1.0);
+    gl_Position = PRECISION_TYPE vec4(inPosition, 0.0, 1.0);
 }
 )";
 static const char* shader_frag_passthrough = RMLUI_SHADER_HEADER R"(
-uniform sampler2D _tex;
-in vec2 fragTexCoord;
-out vec4 finalColor;
+uniform PRECISION_TYPE sampler2D _tex;
+in PRECISION_TYPE vec2 fragTexCoord;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
 	finalColor = texture(_tex, fragTexCoord);
 }
 )";
 static const char* shader_frag_color_matrix = RMLUI_SHADER_HEADER R"(
-uniform sampler2D _tex;
-uniform mat4 _color_matrix;
+uniform PRECISION_TYPE sampler2D _tex;
+uniform PRECISION_TYPE mat4 _color_matrix;
 
-in vec2 fragTexCoord;
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
 	// The general case uses a 4x5 color matrix for full rgba transformation, plus a constant term with the last column.
@@ -237,21 +237,21 @@ void main() {
 	// In the general case we should do the matrix transformation in non-premultiplied space. However, without alpha
 	// transformations, we can do it directly in premultiplied space to avoid the extra division and multiplication
 	// steps. In this space, the constant term needs to be multiplied by the alpha value, instead of unity.
-	vec4 texColor = texture(_tex, fragTexCoord);
-	vec3 transformedColor = vec3(_color_matrix * texColor);
-	finalColor = vec4(transformedColor, texColor.a);
+	PRECISION_TYPE vec4 texColor = texture(_tex, fragTexCoord);
+	PRECISION_TYPE vec3 transformedColor = vec3(_color_matrix * texColor);
+	finalColor = PRECISION_TYPE vec4(transformedColor, texColor.a);
 }
 )";
 static const char* shader_frag_blend_mask = RMLUI_SHADER_HEADER R"(
-uniform sampler2D _tex;
-uniform sampler2D _texMask;
+uniform PRECISION_TYPE sampler2D _tex;
+uniform PRECISION_TYPE sampler2D _texMask;
 
-in vec2 fragTexCoord;
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	vec4 texColor = texture(_tex, fragTexCoord);
-	float maskAlpha = texture(_texMask, fragTexCoord).a;
+	PRECISION_TYPE vec4 texColor = texture(_tex, fragTexCoord);
+	PRECISION_TYPE float maskAlpha = texture(_texMask, fragTexCoord).a;
 	finalColor = texColor * maskAlpha;
 }
 )";
@@ -260,49 +260,49 @@ void main() {
 	RMLUI_SHADER_HEADER "\n#define BLUR_SIZE " RMLUI_STRINGIFY(BLUR_SIZE) "\n#define BLUR_NUM_WEIGHTS " RMLUI_STRINGIFY(BLUR_NUM_WEIGHTS)
 
 static const char* shader_vert_blur = RMLUI_SHADER_BLUR_HEADER R"(
-uniform vec2 _texelOffset;
+uniform PRECISION_TYPE vec2 _texelOffset;
 
 in vec3 inPosition;
-in vec2 inTexCoord0;
+in PRECISION_TYPE vec2 inTexCoord0;
 
-out vec2 fragTexCoord[BLUR_SIZE];
+out PRECISION_TYPE vec2 fragTexCoord[BLUR_SIZE];
 
 void main() {
 	for(int i = 0; i < BLUR_SIZE; i++)
 		fragTexCoord[i] = inTexCoord0 - float(i - BLUR_NUM_WEIGHTS + 1) * _texelOffset;
-    gl_Position = vec4(inPosition, 1.0);
+    gl_Position = PRECISION_TYPE vec4(inPosition, 1.0);
 }
 )";
 static const char* shader_frag_blur = RMLUI_SHADER_BLUR_HEADER R"(
-uniform sampler2D _tex;
-uniform float _weights[BLUR_NUM_WEIGHTS];
-uniform vec2 _texCoordMin;
-uniform vec2 _texCoordMax;
+uniform PRECISION_TYPE sampler2D _tex;
+uniform PRECISION_TYPE float _weights[BLUR_NUM_WEIGHTS];
+uniform PRECISION_TYPE vec2 _texCoordMin;
+uniform PRECISION_TYPE vec2 _texCoordMax;
 
-in vec2 fragTexCoord[BLUR_SIZE];
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord[BLUR_SIZE];
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+	PRECISION_TYPE vec4 color = PRECISION_TYPE vec4(0.0, 0.0, 0.0, 0.0);
 	for(int i = 0; i < BLUR_SIZE; i++)
 	{
-		vec2 in_region = step(_texCoordMin, fragTexCoord[i]) * step(fragTexCoord[i], _texCoordMax);
+		PRECISION_TYPE vec2 in_region = step(_texCoordMin, fragTexCoord[i]) * step(fragTexCoord[i], _texCoordMax);
 		color += texture(_tex, fragTexCoord[i]) * in_region.x * in_region.y * _weights[abs(i - BLUR_NUM_WEIGHTS + 1)];
 	}
 	finalColor = color;
 }
 )";
 static const char* shader_frag_drop_shadow = RMLUI_SHADER_HEADER R"(
-uniform sampler2D _tex;
-uniform vec2 _texCoordMin;
-uniform vec2 _texCoordMax;
-uniform vec4 _color;
+uniform PRECISION_TYPE sampler2D _tex;
+uniform PRECISION_TYPE vec2 _texCoordMin;
+uniform PRECISION_TYPE vec2 _texCoordMax;
+uniform PRECISION_TYPE vec4 _color;
 
-in vec2 fragTexCoord;
-out vec4 finalColor;
+in PRECISION_TYPE vec2 fragTexCoord;
+out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	vec2 in_region = step(_texCoordMin, fragTexCoord) * step(fragTexCoord, _texCoordMax);
+	PRECISION_TYPE vec2 in_region = step(_texCoordMin, fragTexCoord) * step(fragTexCoord, _texCoordMax);
 	finalColor = texture(_tex, fragTexCoord).a * in_region.x * in_region.y * _color;
 }
 )";
@@ -872,7 +872,7 @@ void RenderInterface_GL3::BeginFrame()
 
 #ifndef RMLUI_PLATFORM_EMSCRIPTEN
 	// We do blending in nonlinear sRGB space because that is the common practice and gives results that we are used to.
-	glDisable(GL_FRAMEBUFFER_SRGB);
+	//glDisable(GL_FRAMEBUFFER_SRGB);
 #endif
 
 	glEnable(GL_STENCIL_TEST);
