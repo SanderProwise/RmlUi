@@ -85,7 +85,7 @@ void main() {
 	fragColor = inColor0;
 
 	vec2 translatedPos = inPosition + _translate;
-	PRECISION_TYPE vec4 outPos = _transform * PRECISION_TYPE vec4(translatedPos, 0.0, 1.0);
+	PRECISION_TYPE vec4 outPos = _transform * vec4(translatedPos, 0.0, 1.0);
 
     gl_Position = outPos;
 }
@@ -135,7 +135,7 @@ in PRECISION_TYPE vec2 fragTexCoord;
 in PRECISION_TYPE vec4 fragColor;
 out PRECISION_TYPE vec4 finalColor;
 
-PRECISION_TYPE vec4 mix_stop_colors(float t) {
+PRECISION_TYPE vec4 mix_stop_colors(PRECISION_TYPE float t) {
 	PRECISION_TYPE vec4 color = _stop_colors[0];
 
 	for (int i = 1; i < _num_stops; i++)
@@ -199,7 +199,7 @@ void main() {
 		uv += p / l * (sin(z) + 1.) * abs(sin(l * 9. - z - z));
 		c[i] = .01 / length(mod(uv, 1.) - .5);
 	}
-	finalColor = PRECISION_TYPE vec4(c / l, fragColor.a);
+	finalColor = vec4(c / l, fragColor.a);
 }
 )";
 
@@ -211,7 +211,7 @@ out PRECISION_TYPE vec2 fragTexCoord;
 
 void main() {
 	fragTexCoord = inTexCoord0;
-    gl_Position = PRECISION_TYPE vec4(inPosition, 0.0, 1.0);
+    gl_Position = vec4(inPosition, 0.0, 1.0);
 }
 )";
 static const char* shader_frag_passthrough = RMLUI_SHADER_HEADER R"(
@@ -239,7 +239,7 @@ void main() {
 	// steps. In this space, the constant term needs to be multiplied by the alpha value, instead of unity.
 	PRECISION_TYPE vec4 texColor = texture(_tex, fragTexCoord);
 	PRECISION_TYPE vec3 transformedColor = vec3(_color_matrix * texColor);
-	finalColor = PRECISION_TYPE vec4(transformedColor, texColor.a);
+	finalColor = vec4(transformedColor, texColor.a);
 }
 )";
 static const char* shader_frag_blend_mask = RMLUI_SHADER_HEADER R"(
@@ -270,7 +270,7 @@ out PRECISION_TYPE vec2 fragTexCoord[BLUR_SIZE];
 void main() {
 	for(int i = 0; i < BLUR_SIZE; i++)
 		fragTexCoord[i] = inTexCoord0 - float(i - BLUR_NUM_WEIGHTS + 1) * _texelOffset;
-    gl_Position = PRECISION_TYPE vec4(inPosition, 1.0);
+    gl_Position = vec4(inPosition, 1.0);
 }
 )";
 static const char* shader_frag_blur = RMLUI_SHADER_BLUR_HEADER R"(
@@ -283,7 +283,7 @@ in PRECISION_TYPE vec2 fragTexCoord[BLUR_SIZE];
 out PRECISION_TYPE vec4 finalColor;
 
 void main() {
-	PRECISION_TYPE vec4 color = PRECISION_TYPE vec4(0.0, 0.0, 0.0, 0.0);
+	PRECISION_TYPE vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
 	for(int i = 0; i < BLUR_SIZE; i++)
 	{
 		PRECISION_TYPE vec2 in_region = step(_texCoordMin, fragTexCoord[i]) * step(fragTexCoord[i], _texCoordMax);
