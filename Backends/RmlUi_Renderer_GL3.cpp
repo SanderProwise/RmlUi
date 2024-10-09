@@ -363,7 +363,7 @@ enum class UniformId {
 namespace Gfx {
 
 static const char* const program_uniform_names[(size_t)UniformId::Count] = {"_translate", "_transform", "_tex", "_color", "_color_matrix",
-	"_texelOffset", "_texCoordMin", "_texCoordMax", "_texMask", "_weights[0]", "_func", "_p", "_v", "_stop_colors[0]", "_stop_positions[0]",
+	"_texelOffset", "_texCoordMin", "_texCoordMax", "_texMask", "_weights", "_func", "_p", "_v", "_stop_colors", "_stop_positions",
 	"_num_stops", "_value", "_dimensions"};
 
 enum class VertexAttribute { Position, Color0, TexCoord0, Count };
@@ -588,8 +588,9 @@ static bool CreateProgram(GLuint& out_program, Uniforms& inout_uniform_map, Prog
 		UniformId program_uniform = UniformId::Count;
 		for (int i = 0; i < (int)UniformId::Count; i++)
 		{
-			const char* uniform_name = program_uniform_names[i];
-			if (strcmp(name_buf, uniform_name) == 0)
+			Rml::String uniform_name = program_uniform_names[i];
+			Rml::String uniform_array_name = uniform_name + "[0]";
+			if (uniform_name == name_buf || uniform_array_name == name_buf)
 			{
 				program_uniform = (UniformId)i;
 				break;
